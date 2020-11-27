@@ -1,12 +1,13 @@
 package org.lisasp.swing.filechooser.jfx;
 
+import java.awt.Window;
 import java.io.File;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
 
 /**
  * A utility class that summons JavaFX FileChooser from the Swing EDT. (Or
@@ -52,8 +53,8 @@ class SynchronousJFXDirectoryChooser {
      * @param method a function calling one of the dialog-showing methods
      * @return whatever the method returns
      */
-    public <T> T showDialog(Function<DirectoryChooser, T> method) {
-        return showDialog(method, 1, TimeUnit.SECONDS);
+    public File showDialog(Window parent) {
+        return showDialog(parent, 1, TimeUnit.SECONDS);
     }
 
     /**
@@ -84,14 +85,15 @@ class SynchronousJFXDirectoryChooser {
      * @throws IllegalStateException if Platform.runLater() fails to start the
      *                               dialog-showing task within the given timeout
      */
-    public <T> T showDialog(Function<DirectoryChooser, T> method, long timeout, TimeUnit unit) {
-        Callable<T> task = () -> {
+    public File showDialog(Window parent, long timeout, TimeUnit unit) {
+        Function<Stage, File> task = stage -> {
             DirectoryChooser chooser = fileChooserFactory.get();
-            return method.apply(chooser);
+            return chooser.showDialog(stage);
         };
-        SynchronousJFXCaller<T> caller = new SynchronousJFXCaller<>(task);
+
+        SynchronousJFXCaller<File> caller = new SynchronousJFXCaller<>(task);
         try {
-            return caller.call(timeout, unit);
+            return caller.call(parent, timeout, unit);
         } catch (RuntimeException | Error ex) {
             throw ex;
         } catch (InterruptedException ex) {
@@ -101,16 +103,4 @@ class SynchronousJFXDirectoryChooser {
             throw new AssertionError("Got unexpected checked exception from" + " SynchronousJFXCaller.call()", ex);
         }
     }
-
-    /**
-     * Shows a FileChooser using FileChooser.showOpenDialog().
-     * 
-     * @see #showDialog(java.util.function.Function, long,
-     *      java.util.concurrent.TimeUnit)
-     * @return the return value of FileChooser.showOpenDialog()
-     */
-    public File showDialog() {
-        return showDialog(chooser -> chooser.showDialog(null));
-    }
-
 }

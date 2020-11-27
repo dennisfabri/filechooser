@@ -1,13 +1,15 @@
 package org.lisasp.swing.filechooser.jfx;
 
+import java.awt.Window;
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 /**
  * A utility class that summons JavaFX FileChooser from the Swing EDT. (Or
@@ -53,8 +55,8 @@ class SynchronousJFXFileChooser {
      * @param method a function calling one of the dialog-showing methods
      * @return whatever the method returns
      */
-    public <T> T showDialog(Function<FileChooser, T> method) {
-        return showDialog(method, 1, TimeUnit.SECONDS);
+    public <T> T showDialog(Window parent, BiFunction<FileChooser, Stage, T> method) {
+        return showDialog(parent, method, 1, TimeUnit.SECONDS);
     }
 
     /**
@@ -85,21 +87,19 @@ class SynchronousJFXFileChooser {
      * @throws IllegalStateException if Platform.runLater() fails to start the
      *                               dialog-showing task within the given timeout
      */
-    public <T> T showDialog(Function<FileChooser, T> method, long timeout, TimeUnit unit) {
-        Callable<T> task = () -> {
+    public <T> T showDialog(Window parent, BiFunction<FileChooser, Stage, T> method, long timeout, TimeUnit unit) {
+        Function<Stage, T> task = (stage) -> {
             FileChooser chooser = fileChooserFactory.get();
-            return method.apply(chooser);
+            return method.apply(chooser, stage);
         };
         SynchronousJFXCaller<T> caller = new SynchronousJFXCaller<>(task);
         try {
-            return caller.call(timeout, unit);
-        } catch (RuntimeException | Error ex) {
-            throw ex;
+            return caller.call(parent, timeout, unit);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             return null;
         } catch (Exception ex) {
-            throw new AssertionError("Got unexpected checked exception from" + " SynchronousJFXCaller.call()", ex);
+            throw new AssertionError("Got unexpected checked exception from SynchronousJFXCaller.call()", ex);
         }
     }
 
@@ -110,8 +110,8 @@ class SynchronousJFXFileChooser {
      *      java.util.concurrent.TimeUnit)
      * @return the return value of FileChooser.showOpenDialog()
      */
-    public File showOpenDialog() {
-        return showDialog(chooser -> chooser.showOpenDialog(null));
+    public File showOpenDialog(Window parent) {
+        return showDialog(parent, (chooser, stage) -> chooser.showOpenDialog(stage));
     }
 
     /**
@@ -121,8 +121,8 @@ class SynchronousJFXFileChooser {
      *      java.util.concurrent.TimeUnit)
      * @return the return value of FileChooser.showSaveDialog()
      */
-    public File showSaveDialog() {
-        return showDialog(chooser -> chooser.showSaveDialog(null));
+    public File showSaveDialog(Window parent) {
+        return showDialog(parent, (chooser, stage) -> chooser.showSaveDialog(stage));
     }
 
     /**
@@ -132,7 +132,7 @@ class SynchronousJFXFileChooser {
      *      java.util.concurrent.TimeUnit)
      * @return the return value of FileChooser.showOpenMultipleDialog()
      */
-    public List<File> showOpenMultipleDialog() {
-        return showDialog(chooser -> chooser.showOpenMultipleDialog(null));
+    public List<File> showOpenMultipleDialog(Window parent) {
+        return showDialog(parent, (chooser, stage) -> chooser.showOpenMultipleDialog(stage));
     }
 }

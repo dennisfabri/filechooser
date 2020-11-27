@@ -1,17 +1,24 @@
 package org.lisasp.swing.filechooser.jfx;
 
-import java.util.concurrent.Callable;
+import java.awt.Window;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import javafx.application.Platform;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 /**
  * A utility class to execute a Callable synchronously on the JavaFX event
@@ -23,7 +30,7 @@ import javafx.application.Platform;
  * @param <T> the return type of the callable
  */
 class SynchronousJFXCaller<T> {
-    private final Callable<T> callable;
+    private final Function<Stage, T> callable;
 
     /**
      * Constructs a new caller that will execute the provided callable.
@@ -34,8 +41,37 @@ class SynchronousJFXCaller<T> {
      * 
      * @param callable the action to execute on the JFX event thread
      */
-    public SynchronousJFXCaller(Callable<T> callable) {
+    public SynchronousJFXCaller(Function<Stage, T> callable) {
         this.callable = callable;
+    }
+
+    private JDialog getCheckedParent(Window parent) {
+        final JDialog modalBlocker = parent == null ? new JDialog() : new JDialog(parent);
+        modalBlocker.setModal(true);
+        modalBlocker.setUndecorated(true);
+        modalBlocker.setOpacity(0.0f);
+        modalBlocker.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        modalBlocker.addFocusListener(new FocusListener() {
+            
+            @Override
+            public void focusLost(FocusEvent e) {
+            }
+            
+            @Override
+            public void focusGained(FocusEvent e) {
+                Platform.runLater(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        Optional<Stage> maybeStage = javafx.stage.Window.getWindows().stream().filter(w -> w instanceof Stage).map(w -> (Stage)w).findFirst();
+                        if (maybeStage.isPresent()) {
+                            maybeStage.get().toFront();
+                        }
+                    }
+                });
+            }
+        });
+        return modalBlocker;
     }
 
     /**
@@ -57,17 +93,13 @@ class SynchronousJFXCaller<T> {
      *                               its result (note that the task will still run
      *                               anyway and its result will be ignored)
      */
-    public T call(long startTimeout, TimeUnit startTimeoutUnit) throws Exception {
+    public T call(Window parent, long startTimeout, TimeUnit startTimeoutUnit) throws Exception {
         final CountDownLatch taskStarted = new CountDownLatch(1);
         // Can't use volatile boolean here because only finals can be accessed
         // from closures like the lambda expression below.
         final AtomicBoolean taskCancelled = new AtomicBoolean(false);
         // a trick to emulate modality:
-        final JDialog modalBlocker = new JDialog();
-        modalBlocker.setModal(true);
-        modalBlocker.setUndecorated(true);
-        modalBlocker.setOpacity(0.0f);
-        modalBlocker.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        final JDialog modalBlocker = getCheckedParent(parent);
         final CountDownLatch modalityLatch = new CountDownLatch(1);
         final FutureTask<T> task = new FutureTask<>(() -> {
             synchronized (taskStarted) {
@@ -77,13 +109,27 @@ class SynchronousJFXCaller<T> {
                     taskStarted.countDown();
                 }
             }
+            Stage stage = new Stage();
             try {
-                return callable.call();
+                Optional<Image[]> icons = new IconConverter().getIcons(parent);
+                if (icons.isPresent()) {
+                    stage.getIcons().addAll(icons.get());
+                } else {
+                    stage.getIcons().add(new Image("/org/lisasp/swing/filechooser/jfx/empty.png"));
+                }
+                stage.setTitle("jfx-filechooser");
+                stage.initStyle(StageStyle.UTILITY);
+                stage.setOpacity(0);
+                stage.show();
+
+                return callable.apply(stage);
             } finally {
+                stage.close();                
+                
                 // Wait until the Swing thread is blocked in setVisible():
                 modalityLatch.await();
                 // and unblock it:
-                SwingUtilities.invokeLater(() -> modalBlocker.setVisible(false));
+                SwingUtilities.invokeLater(() -> modalBlocker.setVisible(false));                
             }
         });
         Platform.runLater(task);

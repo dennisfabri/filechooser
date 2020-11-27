@@ -60,7 +60,7 @@ public class FileChooserJFX implements FileChooser {
 
     @Override
     public synchronized String[] openFiles(final String title, SimpleFileFilter[] ff, final Window parent) {
-        List<File> files = createFileChooser(title, ff).showDialog(ch -> ch.showOpenMultipleDialog(null));
+        List<File> files = createFileChooser(title, ff).showOpenMultipleDialog(parent);
 
         if (files == null || files.isEmpty()) {
             return new String[0];
@@ -100,7 +100,7 @@ public class FileChooserJFX implements FileChooser {
             return ch;
         });
 
-        File file = chooser.showDialog(ch -> ch.showDialog(null));
+        File file = chooser.showDialog(parent);
         if (file == null) {
             return null;
         }
@@ -109,7 +109,7 @@ public class FileChooserJFX implements FileChooser {
 
     @Override
     public synchronized String openFile(final String title, SimpleFileFilter[] ff, final Window parent) {
-        File file = createFileChooser(title, ff).showDialog(ch -> ch.showOpenDialog(null));
+        File file = createFileChooser(title, ff).showOpenDialog(parent);
 
         if (file == null) {
             return null;
@@ -119,8 +119,7 @@ public class FileChooserJFX implements FileChooser {
 
     @Override
     public synchronized String saveFile(final String title, SimpleFileFilter[] ff, final Window parent) {
-        File file = createFileChooser(title, ff).showDialog(ch -> ch.showSaveDialog(null));
-
+        File file = createFileChooser(title, ff).showSaveDialog(parent);        
         if (file == null) {
             return null;
         }
