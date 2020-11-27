@@ -1,7 +1,9 @@
-<servers>
-	<server>
-		<id>github</id>
-		<username>${env.USERNAME}</username>
-		<password>${env.PASSWORD}</password>
-	</server>
-</servers>
+<settings>
+	<servers>
+		<server>
+			<id>github</id>
+			<username>${env.USERNAME}</username>
+			<password>${env.PASSWORD}</password>
+		</server>
+	</servers>
+</settings>
