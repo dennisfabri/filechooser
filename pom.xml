@@ -34,7 +34,7 @@
 		<repository>
 			<id>github</id>
 			<name>GitHub dennisfabri Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/dennisfabri/commons.xmt</url>
+			<url>https://maven.pkg.github.com/dennisfabri/filechooser</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
@@ -43,7 +43,7 @@
 			</snapshots>
 		</repository>
 	</repositories>
-
+	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
