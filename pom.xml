@@ -29,6 +29,14 @@
 		<junit.version>5.7.0</junit.version>
 		<javafx.version>15.0.1</javafx.version>
 	</properties>
+	
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub dennisfabri Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/dennisfabri/commons.xmt</url>
+		</repository>
+	</distributionManagement>	
 
 	<repositories>
 		<repository>
