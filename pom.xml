@@ -30,6 +30,20 @@
 		<javafx.version>15.0.1</javafx.version>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>github</id>
+			<name>GitHub dennisfabri Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/dennisfabri/commons.xmt</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
