@@ -21,6 +21,7 @@ jobs:
       with:
         java-version: 11
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        USENAME: ${{github.actor}}
+        PASSWORD: ${{ secrets.GITHUB_TOKEN }}    
+      run: mvn -B package --file pom.xml --settings settings.xml
