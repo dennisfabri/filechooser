@@ -8,12 +8,4 @@
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>filechooser-core</artifactId>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
 </project>
