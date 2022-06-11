@@ -49,7 +49,9 @@ class SynchronousJFXCaller<T> {
         final JDialog modalBlocker = parent == null ? new JDialog() : new JDialog(parent);
         modalBlocker.setModal(true);
         modalBlocker.setUndecorated(true);
-        modalBlocker.setOpacity(0.0f);
+        modalBlocker.setLocation(-100000, -100000);
+        modalBlocker.setSize(1, 1);
+        // modalBlocker.setOpacity(0.0f);
         modalBlocker.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         modalBlocker.addFocusListener(new FocusListener() {
             
