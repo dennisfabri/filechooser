@@ -2,6 +2,7 @@ package org.lisasp.swing.filechooser;
 
 import java.awt.Window;
 import java.io.File;
+import java.util.Arrays;
 
 import org.lisasp.swing.filechooser.filefilter.SimpleFileFilter;
 
@@ -48,7 +49,7 @@ public final class FileChooserUtils {
         if (filename != null) {
             setBaseDirFromFile(filename);
         }
-        return filename;
+        return appendSuffixIfNecessary(filename, ff);
     }
 
     /**
@@ -65,7 +66,7 @@ public final class FileChooserUtils {
         if (filename != null) {
             setBaseDirFromFile(filename);
         }
-        return filename;
+        return appendSuffixIfNecessary(filename, ff);
     }
 
     public static synchronized String saveFile(final Window parent, SimpleFileFilter... ff) {
@@ -73,7 +74,7 @@ public final class FileChooserUtils {
         if (filename != null) {
             setBaseDirFromFile(filename);
         }
-        return filename;
+        return appendSuffixIfNecessary(filename, ff);
     }
 
     public static synchronized String saveFile(final Window parent, final String title, SimpleFileFilter... ff) {
@@ -81,7 +82,7 @@ public final class FileChooserUtils {
         if (filename != null) {
             setBaseDirFromFile(filename);
         }
-        return filename;
+        return appendSuffixIfNecessary(filename, ff);
     }
 
     public static synchronized String[] openFiles(final Window parent, final SimpleFileFilter... ff) {
@@ -89,7 +90,7 @@ public final class FileChooserUtils {
         if (filenames != null && filenames.length > 0) {
             setBaseDirFromFile(filenames[0]);
         }
-        return filenames;
+        return appendSuffixIfNecessary(filenames, ff);
     }
 
     /**
@@ -107,7 +108,7 @@ public final class FileChooserUtils {
         if (filenames != null && filenames.length > 0) {
             setBaseDirFromFile(filenames[0]);
         }
-        return filenames;
+        return appendSuffixIfNecessary(filenames, ff);
     }
 
     /**
@@ -124,5 +125,19 @@ public final class FileChooserUtils {
             setBaseDir(directory);
         }
         return directory;
+    }
+    
+    private static String[] appendSuffixIfNecessary(String[] filenames, SimpleFileFilter[] filters) {
+        return Arrays.stream(filenames).map(filename -> appendSuffixIfNecessary(filename, filters)).toArray(String[]::new);
+    }
+    
+    private static String appendSuffixIfNecessary(String filename, SimpleFileFilter[] filters) {
+        if (filters == null || filters.length == 0) {
+            return filename;
+        }
+        if (Arrays.stream(filters).noneMatch(filter -> filter.accept(new File(filename)))) {
+            return String.format("%s%s", filename, filters[0].getSuffixes()[0]);
+        }
+        return filename;
     }
 }
