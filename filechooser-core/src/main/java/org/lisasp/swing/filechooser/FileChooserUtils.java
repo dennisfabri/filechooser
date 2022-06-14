@@ -132,7 +132,7 @@ public final class FileChooserUtils {
     }
     
     private static String appendSuffixIfNecessary(String filename, SimpleFileFilter[] filters) {
-        if (filters == null || filters.length == 0) {
+        if (filename == null || filters == null || filters.length == 0) {
             return filename;
         }
         if (Arrays.stream(filters).noneMatch(filter -> filter.accept(new File(filename)))) {
