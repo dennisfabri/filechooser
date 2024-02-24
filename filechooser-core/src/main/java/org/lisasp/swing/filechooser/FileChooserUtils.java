@@ -39,6 +39,9 @@ public final class FileChooserUtils {
     }
     
     private static boolean directoryExists(String directory) {
+        if (directory == null) {
+            return false;
+        }
         File d = new File(directory);
         if (!d.exists()) {
             return false;
