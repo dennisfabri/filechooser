@@ -14,6 +14,8 @@ import org.lisasp.swing.filechooser.filefilter.SimpleFileFilter;
 public final class FileChooserUtils {
 
     private static FileChooser instance;
+    
+    private static String directory = null;
 
     public static void initialize(FileChooser newInstance) {
         if (newInstance != null) {
@@ -27,9 +29,30 @@ public final class FileChooserUtils {
     private FileChooserUtils() {
         // Never used
     }
-
+    
     public static synchronized boolean setBaseDir(String directory) {
-        return instance.setBaseDir(directory);
+        if (!directoryExists(directory)) {
+            return false;
+        }
+        FileChooserUtils.directory = directory;
+        return true;
+    }
+    
+    private static boolean directoryExists(String directory) {
+        File d = new File(directory);
+        if (!d.exists()) {
+            return false;
+        }
+        if (!d.isDirectory()) {
+            return false;
+        }
+        return true;
+    }
+
+    private static void validateDirectory() {
+        if (!directoryExists(directory)) {
+            directory = null;
+        }
     }
 
     public static synchronized boolean setBaseDirFromFile(String filename) {
@@ -45,7 +68,8 @@ public final class FileChooserUtils {
     }
 
     public static synchronized String openFile(final Window parent, SimpleFileFilter... ff) {
-        String filename = instance.openFile(null, ff, parent);
+        validateDirectory();
+        String filename = instance.openFile(null, ff,directory, parent);
         if (filename != null) {
             setBaseDirFromFile(filename);
         }
@@ -62,7 +86,8 @@ public final class FileChooserUtils {
      * @return Dateiname oder null
      */
     public static synchronized String openFile(final Window parent, final String title, SimpleFileFilter... ff) {
-        String filename = instance.openFile(title, ff, parent);
+        validateDirectory();
+        String filename = instance.openFile(title, ff,directory, parent);
         if (filename != null) {
             setBaseDirFromFile(filename);
         }
@@ -70,7 +95,8 @@ public final class FileChooserUtils {
     }
 
     public static synchronized String saveFile(final Window parent, SimpleFileFilter... ff) {
-        String filename = instance.saveFile(null, ff, parent);
+        validateDirectory();
+        String filename = instance.saveFile(null, ff,directory, parent);
         if (filename != null) {
             setBaseDirFromFile(filename);
         }
@@ -78,7 +104,8 @@ public final class FileChooserUtils {
     }
 
     public static synchronized String saveFile(final Window parent, final String title, SimpleFileFilter... ff) {
-        String filename = instance.saveFile(title, ff, parent);
+        validateDirectory();
+        String filename = instance.saveFile(title, ff,directory, parent);
         if (filename != null) {
             setBaseDirFromFile(filename);
         }
@@ -86,7 +113,8 @@ public final class FileChooserUtils {
     }
 
     public static synchronized String[] openFiles(final Window parent, final SimpleFileFilter... ff) {
-        String[] filenames = instance.openFiles(null, ff, parent);
+        validateDirectory();
+        String[] filenames = instance.openFiles(null, ff,directory, parent);
         if (filenames != null && filenames.length > 0) {
             setBaseDirFromFile(filenames[0]);
         }
@@ -104,7 +132,8 @@ public final class FileChooserUtils {
      */
     public static synchronized String[] openFiles(final Window parent, final String title,
             final SimpleFileFilter... ff) {
-        String[] filenames = instance.openFiles(title, ff, parent);
+        validateDirectory();
+        String[] filenames = instance.openFiles(title, ff,directory, parent);
         if (filenames != null && filenames.length > 0) {
             setBaseDirFromFile(filenames[0]);
         }
@@ -120,11 +149,12 @@ public final class FileChooserUtils {
      * @return Verzeichnisname
      */
     public static synchronized String chooseDirectory(final Window parent) {
-        String directory = instance.chooseDirectory(parent);
-        if (directory != null) {
-            setBaseDir(directory);
+        validateDirectory();
+        String dir = instance.chooseDirectory(directory,parent);
+        if (dir != null) {
+            setBaseDir(dir);
         }
-        return directory;
+        return dir;
     }
     
     private static String[] appendSuffixIfNecessary(String[] filenames, SimpleFileFilter[] filters) {

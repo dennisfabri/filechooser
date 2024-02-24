@@ -25,54 +25,30 @@ public class FileChooserJFX implements FileChooser {
             final CountDownLatch latch = new CountDownLatch(1);
 
             Platform.setImplicitExit(false);
-            Platform.startup(new Runnable() {
-                @Override
-                public void run() {
-                    latch.countDown();
-                }
-            });
+            Platform.startup(latch::countDown);
             if (!latch.await(5L, TimeUnit.SECONDS)) {
                 throw new ExceptionInInitializerError();
             }
-        } catch (Exception ex) {
+        } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
     }
 
-    private String dir = "";
-
-    protected String getCurrentDirectory() {
-        return dir;
-    }
-
     @Override
-    public synchronized boolean setBaseDir(String directory) {
-        File d = new File(directory);
-        if (!d.exists()) {
-            return false;
-        }
-        if (!d.isDirectory()) {
-            return false;
-        }
-        dir = directory;
-        return true;
-    }
-
-    @Override
-    public synchronized String[] openFiles(final String title, SimpleFileFilter[] ff, final Window parent) {
-        List<File> files = createFileChooser(title, ff).showOpenMultipleDialog(parent);
+    public synchronized String[] openFiles(final String title, SimpleFileFilter[] ff, String dir, final Window parent) {
+        List<File> files = createFileChooser(title, ff, dir).showOpenMultipleDialog(parent);
 
         if (files == null || files.isEmpty()) {
             return new String[0];
         }
-        return files.stream().map(f -> f.getAbsolutePath()).toArray(String[]::new);
+        return files.stream().map(File::getAbsolutePath).toArray(String[]::new);
     }
 
     private ExtensionFilter[] getExtensionFilters(SimpleFileFilter[] ff) {
         if (ff == null || ff.length == 0) {
             return new ExtensionFilter[0];
         }
-        return Arrays.stream(ff).map(f -> getExtensionFilter(f)).toArray(ExtensionFilter[]::new);
+        return Arrays.stream(ff).map(this::getExtensionFilter).toArray(ExtensionFilter[]::new);
     }
 
     private ExtensionFilter getExtensionFilter(SimpleFileFilter f) {
@@ -87,7 +63,7 @@ public class FileChooserJFX implements FileChooser {
      * @return Verzeichnisname
      */
     @Override
-    public synchronized String chooseDirectory(final Window parent) {
+    public synchronized String chooseDirectory(String dir, final Window parent) {
         SynchronousJFXDirectoryChooser chooser = new SynchronousJFXDirectoryChooser(() -> {
             javafx.stage.DirectoryChooser ch = new javafx.stage.DirectoryChooser();
             if (dir != null && !dir.isBlank()) {
@@ -108,8 +84,8 @@ public class FileChooserJFX implements FileChooser {
     }
 
     @Override
-    public synchronized String openFile(final String title, SimpleFileFilter[] ff, final Window parent) {
-        File file = createFileChooser(title, ff).showOpenDialog(parent);
+    public synchronized String openFile(final String title, SimpleFileFilter[] ff, String dir, final Window parent) {
+        File file = createFileChooser(title, ff, dir).showOpenDialog(parent);
 
         if (file == null) {
             return null;
@@ -118,21 +94,21 @@ public class FileChooserJFX implements FileChooser {
     }
 
     @Override
-    public synchronized String saveFile(final String title, SimpleFileFilter[] ff, final Window parent) {
-        File file = createFileChooser(title, ff).showSaveDialog(parent);        
+    public synchronized String saveFile(final String title, SimpleFileFilter[] ff, String dir, final Window parent) {
+        File file = createFileChooser(title, ff, dir).showSaveDialog(parent);        
         if (file == null) {
             return null;
         }
         return file.getAbsolutePath();
     }
 
-    private SynchronousJFXFileChooser createFileChooser(final String title, SimpleFileFilter[] ff) {
+    private SynchronousJFXFileChooser createFileChooser(final String title, SimpleFileFilter[] ff, String dir) {
         return new SynchronousJFXFileChooser(() -> {
             javafx.stage.FileChooser ch = new javafx.stage.FileChooser();
             if (title != null && !title.isBlank()) {
                 ch.setTitle(title);
             }
-            if (dir != null && !dir.isBlank()) {
+            if (dir != null) {
                 try {
                     ch.setInitialDirectory(new File(dir));
                 } catch (Exception ex) {

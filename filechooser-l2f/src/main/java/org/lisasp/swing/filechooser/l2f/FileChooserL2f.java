@@ -18,29 +18,10 @@ import com.l2fprod.common.directorychooser.JDirectoryChooser;
  */
 public class FileChooserL2f implements FileChooser {
 
-    private String dir = "";
-
-    protected String getCurrentDirectory() {
-        return dir;
-    }
-
-    @Override
-    public synchronized boolean setBaseDir(String directory) {
-        File d = new File(directory);
-        if (!d.exists()) {
-            return false;
-        }
-        if (!d.isDirectory()) {
-            return false;
-        }
-        dir = directory;
-        return true;
-    }
-
     private synchronized String[] openFiles(final String title, String button, SimpleFileFilter[] ff,
-            final boolean singleSelection, final Window parent) {
+            final boolean singleSelection, String dir, final Window parent) {
         JFileChooser jFC = new JFileChooser();
-        if (!dir.equals("")) {
+        if (dir != null) {
             jFC.setCurrentDirectory(new File(dir));
         }
         if (ff != null && ff.length == 0) {
@@ -76,7 +57,6 @@ public class FileChooserL2f implements FileChooser {
             }
             String[] names = new String[files.length];
             for (int x = 0; x < files.length; x++) {
-                dir = jFC.getCurrentDirectory().getPath();
                 names[x] = jFC.getCurrentDirectory().getPath() + java.io.File.separator + files[x].getName();
                 if (ff != null) {
                     boolean ends = false;
@@ -118,7 +98,7 @@ public class FileChooserL2f implements FileChooser {
      * @return Verzeichnisname
      */
     @Override
-    public synchronized String chooseDirectory(final Window parent) {
+    public synchronized String chooseDirectory(String dir, final Window parent) {
         JDirectoryChooser chooser = new JDirectoryChooser(dir);
         int choice = chooser.showOpenDialog(parent);
         if (choice == JFileChooser.CANCEL_OPTION) {
@@ -128,13 +108,13 @@ public class FileChooserL2f implements FileChooser {
     }
 
     @Override
-    public String[] openFiles(String title, SimpleFileFilter[] ff, Window parent) {
-        return openFiles(title, "Open", ff, false, parent);
+    public String[] openFiles(String title, SimpleFileFilter[] ff, String dir, Window parent) {
+        return openFiles(title, "Open", ff, false, dir, parent);
     }
 
     @Override
-    public String openFile(String title, SimpleFileFilter[] ff, Window parent) {
-        String[] result = openFiles(title, "Open", ff, true, parent);
+    public String openFile(String title, SimpleFileFilter[] ff, String dir, Window parent) {
+        String[] result = openFiles(title, "Open", ff, true, dir, parent);
         if (result == null || result.length == 0) {
             return null;
         }
@@ -142,8 +122,8 @@ public class FileChooserL2f implements FileChooser {
     }
 
     @Override
-    public String saveFile(String title, SimpleFileFilter[] ff, Window parent) {
-        String[] result = openFiles(title, "Save", ff, true, parent);
+    public String saveFile(String title, SimpleFileFilter[] ff, String dir, Window parent) {
+        String[] result = openFiles(title, "Save", ff, true, dir, parent);
         if (result == null || result.length == 0) {
             return null;
         }

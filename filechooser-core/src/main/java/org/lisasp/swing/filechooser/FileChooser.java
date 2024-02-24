@@ -5,9 +5,6 @@ import java.awt.Window;
 import org.lisasp.swing.filechooser.filefilter.SimpleFileFilter;
 
 public interface FileChooser {
-
-    boolean setBaseDir(String directory);
-
     /*
      * Erzeugt einen Dateirequester
      * 
@@ -21,11 +18,11 @@ public interface FileChooser {
      * 
      * @return Dateiname oder null
      */
-    String[] openFiles(String title, SimpleFileFilter[] ff, Window parent);
+    String[] openFiles(String title, SimpleFileFilter[] ff, String directory, Window parent);
 
-    String openFile(String title, SimpleFileFilter[] ff, Window parent);
+    String openFile(String title, SimpleFileFilter[] ff, String directory, Window parent);
 
-    String saveFile(String title, SimpleFileFilter[] ff, Window parent);
+    String saveFile(String title, SimpleFileFilter[] ff, String directory, Window parent);
 
     /**
      * Zeigt einen Verzeichnisrequester
@@ -33,5 +30,5 @@ public interface FileChooser {
      * @param window parent window
      * @return Verzeichnisname
      */
-    String chooseDirectory(Window parent);
+    String chooseDirectory(String directory, Window parent);
 }
