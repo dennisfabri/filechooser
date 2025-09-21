@@ -1,6 +1,6 @@
 package org.lisasp.swing.filechooser.jfx;
 
-import java.awt.Window;
+import java.awt.*;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -25,18 +25,18 @@ class SynchronousJFXFileChooser {
 
     /**
      * Constructs a new file chooser that will use the provided factory.
-     * 
+     * <p>
      * The factory is accessed from the JavaFX event thread, so it should either be
      * immutable or at least its state shouldn't be changed randomly while one of
      * the dialog-showing method calls is in progress.
-     * 
+     * <p>
      * The factory should create and set up the chooser, for example, by setting
      * extension filters. If there is no need to perform custom initialization of
      * the chooser, FileChooser::new could be passed as a factory.
-     * 
+     * <p>
      * Alternatively, the method parameter supplied to the showDialog() function can
      * be used to provide custom initialization.
-     * 
+     *
      * @param fileChooserFactory the function used to construct new choosers
      */
     public SynchronousJFXFileChooser(Supplier<FileChooser> fileChooserFactory) {
@@ -45,15 +45,15 @@ class SynchronousJFXFileChooser {
 
     /**
      * Shows the FileChooser dialog by calling the provided method.
-     * 
+     * <p>
      * Waits for one second for the dialog-showing task to start in the JavaFX event
      * thread, then throws an IllegalStateException if it didn't start.
-     * 
-     * @see #showDialog(java.util.function.Function, long,
-     *      java.util.concurrent.TimeUnit)
+     *
      * @param <T>    the return type of the method, usually File or List&lt;File&gt;
      * @param method a function calling one of the dialog-showing methods
      * @return whatever the method returns
+     * @see #showDialog(java.util.function.Function, long,
+     * java.util.concurrent.TimeUnit)
      */
     public <T> T showDialog(Window parent, BiFunction<FileChooser, Stage, T> method) {
         return showDialog(parent, method, 1, TimeUnit.SECONDS);
@@ -76,7 +76,7 @@ class SynchronousJFXFileChooser {
      * start or for its result, then null is returned and the Thread interrupted
      * status is set.
      * </p>
-     * 
+     *
      * @param <T>     return type (usually File or List&lt;File&gt;)
      * @param method  a function that calls the desired FileChooser method
      * @param timeout time to wait for Platform.runLater() to <em>start</em> the
@@ -88,6 +88,23 @@ class SynchronousJFXFileChooser {
      *                               dialog-showing task within the given timeout
      */
     public <T> T showDialog(Window parent, BiFunction<FileChooser, Stage, T> method, long timeout, TimeUnit unit) {
+        if (parent == null) {
+            Frame f = new Frame();
+            try {
+                f.setUndecorated(true);
+                f.setSize(0, 0);
+                AWTUtils.center(f);
+                f.setVisible(true);
+                return showDialogInternal(f, method, timeout, unit);
+            } finally {
+                f.setVisible(false);
+                f.dispose();
+            }
+        }
+        return showDialogInternal(parent, method, timeout, unit);
+    }
+
+    private <T> T showDialogInternal(Window parent, BiFunction<FileChooser, Stage, T> method, long timeout, TimeUnit unit) {
         Function<Stage, T> task = (stage) -> {
             FileChooser chooser = fileChooserFactory.get();
             return method.apply(chooser, stage);
@@ -105,34 +122,47 @@ class SynchronousJFXFileChooser {
 
     /**
      * Shows a FileChooser using FileChooser.showOpenDialog().
-     * 
-     * @see #showDialog(java.util.function.Function, long,
-     *      java.util.concurrent.TimeUnit)
+     *
      * @return the return value of FileChooser.showOpenDialog()
+     * @see #showDialog(java.util.function.Function, long,
+     * java.util.concurrent.TimeUnit)
      */
     public File showOpenDialog(Window parent) {
-        return showDialog(parent, (chooser, stage) -> chooser.showOpenDialog(stage));
+        return showDialog(parent, FileChooser::showOpenDialog);
     }
 
     /**
      * Shows a FileChooser using FileChooser.showSaveDialog().
-     * 
-     * @see #showDialog(java.util.function.Function, long,
-     *      java.util.concurrent.TimeUnit)
+     *
      * @return the return value of FileChooser.showSaveDialog()
+     * @see #showDialog(java.util.function.Function, long,
+     * java.util.concurrent.TimeUnit)
      */
     public File showSaveDialog(Window parent) {
-        return showDialog(parent, (chooser, stage) -> chooser.showSaveDialog(stage));
+        return showDialog(parent, FileChooser::showSaveDialog);
     }
 
     /**
      * Shows a FileChooser using FileChooser.showOpenMultipleDialog().
-     * 
-     * @see #showDialog(java.util.function.Function, long,
-     *      java.util.concurrent.TimeUnit)
+     *
      * @return the return value of FileChooser.showOpenMultipleDialog()
+     * @see #showDialog(java.util.function.Function, long,
+     * java.util.concurrent.TimeUnit)
      */
     public List<File> showOpenMultipleDialog(Window parent) {
-        return showDialog(parent, (chooser, stage) -> chooser.showOpenMultipleDialog(stage));
+        return showDialog(parent, FileChooser::showOpenMultipleDialog);
+    }
+
+    private static void center(Window frame) {
+        Rectangle r = getVirtualScreenBounds(frame);
+
+        int x = (int) (r.getX() + Math.max(0, (r.getWidth() - frame.getWidth()) / 2));
+        int y = (int) (r.getY() + Math.max(0, (r.getHeight() - frame.getHeight()) / 2));
+
+        frame.setLocation(x, y);
+    }
+
+    private static Rectangle getVirtualScreenBounds(Window w) {
+        return w.getGraphicsConfiguration().getDevice().getDefaultConfiguration().getBounds();
     }
 }

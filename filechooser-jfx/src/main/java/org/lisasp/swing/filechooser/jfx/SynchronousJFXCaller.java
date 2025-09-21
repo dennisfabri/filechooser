@@ -1,6 +1,6 @@
 package org.lisasp.swing.filechooser.jfx;
 
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.Optional;
@@ -23,10 +23,10 @@ import javafx.stage.StageStyle;
 /**
  * A utility class to execute a Callable synchronously on the JavaFX event
  * thread.
- *
+ * <p>
  * Source:
  * https://stackoverflow.com/questions/28920758/javafx-filechooser-in-swing
- * 
+ *
  * @param <T> the return type of the callable
  */
 class SynchronousJFXCaller<T> {
@@ -34,11 +34,11 @@ class SynchronousJFXCaller<T> {
 
     /**
      * Constructs a new caller that will execute the provided callable.
-     * 
+     * <p>
      * The callable is accessed from the JavaFX event thread, so it should either be
      * immutable or at least its state shouldn't be changed randomly while the
      * call() method is in progress.
-     * 
+     *
      * @param callable the action to execute on the JFX event thread
      */
     public SynchronousJFXCaller(Function<Stage, T> callable) {
@@ -54,21 +54,18 @@ class SynchronousJFXCaller<T> {
         // modalBlocker.setOpacity(0.0f);
         modalBlocker.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         modalBlocker.addFocusListener(new FocusListener() {
-            
+
             @Override
             public void focusLost(FocusEvent e) {
             }
-            
+
             @Override
             public void focusGained(FocusEvent e) {
                 Platform.runLater(new Runnable() {
-                    
+
                     @Override
                     public void run() {
-                        Optional<Stage> maybeStage = javafx.stage.Window.getWindows().stream().filter(w -> w instanceof Stage).map(w -> (Stage)w).findFirst();
-                        if (maybeStage.isPresent()) {
-                            maybeStage.get().toFront();
-                        }
+                        javafx.stage.Window.getWindows().stream().filter(w -> w instanceof Stage).map(w -> (Stage) w).findFirst().ifPresent(Stage::toFront);
                     }
                 });
             }
@@ -83,7 +80,7 @@ class SynchronousJFXCaller<T> {
      * waits first for the task to start, then for it to return a result. Any
      * exception thrown by the Callable will be rethrown in the calling thread.
      * </p>
-     * 
+     *
      * @param startTimeout     time to wait for Platform.runLater() to
      *                         <em>start</em> the dialog-showing task
      * @param startTimeoutUnit the time unit of the startTimeout argument
@@ -111,6 +108,10 @@ class SynchronousJFXCaller<T> {
                     taskStarted.countDown();
                 }
             }
+
+            Point location = parent.getLocationOnScreen();
+            Dimension size = parent.getSize();
+
             Stage stage = new Stage();
             try {
                 Optional<Image[]> icons = new IconConverter().getIcons(parent);
@@ -122,16 +123,29 @@ class SynchronousJFXCaller<T> {
                 stage.setTitle("jfx-filechooser");
                 stage.initStyle(StageStyle.UTILITY);
                 stage.setOpacity(0);
+
+                double fxWidth = 1.0;
+                double fxHeight = 1.0;
+
+                // Berechne zentrierte Position
+                double x = location.x + (size.width - fxWidth) / 2;
+                double y = location.y + (size.height - fxHeight) / 2;
+
+                // Setze Position und Größe des Stages
+                stage.setX(x);
+                stage.setY(y);
+                stage.setWidth(fxWidth);
+                stage.setHeight(fxHeight);
                 stage.show();
 
                 return callable.apply(stage);
             } finally {
-                stage.close();                
-                
+                stage.close();
+
                 // Wait until the Swing thread is blocked in setVisible():
                 modalityLatch.await();
                 // and unblock it:
-                SwingUtilities.invokeLater(() -> modalBlocker.setVisible(false));                
+                SwingUtilities.invokeLater(() -> modalBlocker.setVisible(false));
             }
         });
         Platform.runLater(task);
@@ -148,10 +162,8 @@ class SynchronousJFXCaller<T> {
         }
         // a trick to notify the task AFTER we have been blocked
         // in setVisible()
-        SwingUtilities.invokeLater(() -> {
-            // notify that we are ready to get the result:
-            modalityLatch.countDown();
-        });
+        // notify that we are ready to get the result:
+        SwingUtilities.invokeLater(modalityLatch::countDown);
         modalBlocker.setVisible(true); // blocks
         modalBlocker.dispose(); // release resources
         try {

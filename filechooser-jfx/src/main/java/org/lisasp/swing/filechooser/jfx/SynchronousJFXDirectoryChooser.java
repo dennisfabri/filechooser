@@ -1,6 +1,6 @@
 package org.lisasp.swing.filechooser.jfx;
 
-import java.awt.Window;
+import java.awt.*;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -23,18 +23,18 @@ class SynchronousJFXDirectoryChooser {
 
     /**
      * Constructs a new file chooser that will use the provided factory.
-     * 
+     * <p>
      * The factory is accessed from the JavaFX event thread, so it should either be
      * immutable or at least its state shouldn't be changed randomly while one of
      * the dialog-showing method calls is in progress.
-     * 
+     * <p>
      * The factory should create and set up the chooser, for example, by setting
      * extension filters. If there is no need to perform custom initialization of
      * the chooser, FileChooser::new could be passed as a factory.
-     * 
+     * <p>
      * Alternatively, the method parameter supplied to the showDialog() function can
      * be used to provide custom initialization.
-     * 
+     *
      * @param fileChooserFactory the function used to construct new choosers
      */
     public SynchronousJFXDirectoryChooser(Supplier<DirectoryChooser> fileChooserFactory) {
@@ -43,15 +43,15 @@ class SynchronousJFXDirectoryChooser {
 
     /**
      * Shows the FileChooser dialog by calling the provided method.
-     * 
+     * <p>
      * Waits for one second for the dialog-showing task to start in the JavaFX event
      * thread, then throws an IllegalStateException if it didn't start.
-     * 
-     * @see #showDialog(java.util.function.Function, long,
-     *      java.util.concurrent.TimeUnit)
+     *
      * @param <T>    the return type of the method, usually File or List&lt;File&gt;
      * @param method a function calling one of the dialog-showing methods
      * @return whatever the method returns
+     * @see #showDialog(java.util.function.Function, long,
+     * java.util.concurrent.TimeUnit)
      */
     public File showDialog(Window parent) {
         return showDialog(parent, 1, TimeUnit.SECONDS);
@@ -74,7 +74,7 @@ class SynchronousJFXDirectoryChooser {
      * start or for its result, then null is returned and the Thread interrupted
      * status is set.
      * </p>
-     * 
+     *
      * @param <T>     return type (usually File or List&lt;File&gt;)
      * @param method  a function that calls the desired FileChooser method
      * @param timeout time to wait for Platform.runLater() to <em>start</em> the
@@ -86,6 +86,23 @@ class SynchronousJFXDirectoryChooser {
      *                               dialog-showing task within the given timeout
      */
     public File showDialog(Window parent, long timeout, TimeUnit unit) {
+        if (parent == null) {
+            Frame f = new Frame();
+            try {
+                f.setUndecorated(true);
+                f.setSize(0, 0);
+                AWTUtils.center(f);
+                f.setVisible(true);
+                return showDialogInternal(f, timeout, unit);
+            } finally {
+                f.setVisible(false);
+                f.dispose();
+            }
+        }
+        return showDialogInternal(parent, timeout, unit);
+    }
+
+    private File showDialogInternal(Window parent, long timeout, TimeUnit unit) {
         Function<Stage, File> task = stage -> {
             DirectoryChooser chooser = fileChooserFactory.get();
             return chooser.showDialog(stage);
