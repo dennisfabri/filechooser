@@ -161,6 +161,9 @@ public final class FileChooserUtils {
     }
     
     private static String[] appendSuffixIfNecessary(String[] filenames, SimpleFileFilter[] filters) {
+        if (filenames == null || filenames.length == 0) {
+            return filenames;
+        }
         return Arrays.stream(filenames).map(filename -> appendSuffixIfNecessary(filename, filters)).toArray(String[]::new);
     }
     
