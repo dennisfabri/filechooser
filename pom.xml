@@ -1,114 +1,141 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.lisasp.swing</groupId>
-	<artifactId>filechooser</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <groupId>org.lisasp.swing</groupId>
+    <artifactId>filechooser</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<name>filechooser</name>
-	<description>A simple filechooser</description>
-	<url>http://www.lisasp.org</url>
+    <name>filechooser</name>
+    <description>A simple filechooser</description>
+    <url>http://www.lisasp.org</url>
 
-	<modules>
-		<module>filechooser-core</module>
-		<module>filechooser-jfx</module>
-		<module>filechooser-l2f</module>
-	</modules>
+    <modules>
+        <module>filechooser-core</module>
+        <module>filechooser-jfx</module>
+        <module>filechooser-l2f</module>
+    </modules>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>21</java.version>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>25</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
 
-		<junit.version>5.10.2</junit.version>
-		<javafx.version>21</javafx.version>
-	</properties>
+        <junit.version>6.0.3</junit.version>
+        <javafx.version>25.0.2</javafx.version>
+    </properties>
 
-	<distributionManagement>
-		<repository>
-			<id>github</id>
-			<name>GitHub dennisfabri Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/dennisfabri/filechooser</url>
-		</repository>
-	</distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub dennisfabri Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/dennisfabri/filechooser</url>
+        </repository>
+    </distributionManagement>
 
-	<repositories>
-		<repository>
-			<id>github</id>
-			<name>GitHub dennisfabri Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/dennisfabri/filechooser</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub dennisfabri Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/dennisfabri/filechooser</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.lisasp.swing</groupId>
-				<artifactId>filechooser-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.lisasp.swing</groupId>
-				<artifactId>filechooser-jfx</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.lisasp.swing</groupId>
-				<artifactId>filechooser-l2f</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.lisasp.swing</groupId>
+                <artifactId>filechooser-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.lisasp.swing</groupId>
+                <artifactId>filechooser-jfx</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.lisasp.swing</groupId>
+                <artifactId>filechooser-l2f</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.openjfx</groupId>
-				<artifactId>javafx-controls</artifactId>
-				<version>${javafx.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.lisasp.legacy</groupId>
-				<artifactId>l2fprod-common-directorychooser</artifactId>
-				<version>7.4.0-SNAPSHOT</version>
-			</dependency>
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-controls</artifactId>
+                <version>${javafx.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.lisasp.legacy</groupId>
+                <artifactId>l2fprod-common-directorychooser</artifactId>
+                <version>7.4.0-SNAPSHOT</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.junit.jupiter</groupId>
-				<artifactId>junit-jupiter-engine</artifactId>
-				<version>${junit.version}</version>
-				<scope>test</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-
-	<dependencies>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.12.1</version>
-				<configuration>
-					<release>${java.version}</release>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.15.0</version>
+                <configuration>
+                    <release>${java.version}</release>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.21.0</version>
+                <configuration>
+                    <rulesUri>file:./version-rules.xml</rulesUri>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.9.0</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
